@@ -6,4 +6,5 @@ pdf2image >= 1.16.3
 pytesseract >= 0.3.10
 pdfminer.six >= 20221105
 tensorflow_hub >= 0.13.0 
-tensorflow_text == 2.12.1
+functions-framework >= 3.3.0
+cloudevents >= 1.9.0
