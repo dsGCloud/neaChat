@@ -45,10 +45,7 @@ def file_load(cloud_event: CloudEvent) -> tuple:
     me = MatchingEngine.from_components(
         project_id='nom-llm-001',
         region='us-central1',
-        gcs_bucket_name=f'gs://neachat-index',
-        embedding=embedding,
-        index_id='nea-ME-index',
-        endpoint_id='neaEndpoint'
+        gcs_bucket_name=f'gs://neachat'
     )
 
     # Get the index
@@ -59,27 +56,27 @@ def file_load(cloud_event: CloudEvent) -> tuple:
         me = MatchingEngine.create_index(
             project_id='nom-llm-001',
             region='us-central1',
-            gcs_bucket_name='gs://neachat-index',
+            gcs_bucket_name='gs://neachat',
             embedding=embedding,
             index_id='nea-ME-index'
         )
-    else:
-        # Define Cloud Storage file loader to read a document
-        documents = load_docs(me.project_id, me.gcs_bucket_name)
+    
+    # Define Cloud Storage file loader to read a document
+    documents = load_docs(me.project_id, me.gcs_bucket_name)
 
-        # Split document into chunks
-        doc_splits = split_docs(documents)
+    # Split document into chunks
+    doc_splits = split_docs(documents)
 
-        # Add embeddings of document chunks to Matching Engine
-        texts = [doc.page_content for doc in doc_splits]
-        metadatas = [
-            [
-                {"namespace": "source", "allow_list": [doc.metadata["source"]]},
-                {"namespace": "document_name", "allow_list": [doc.metadata["document_name"]]},
-                {"namespace": "chunk", "allow_list": [str(doc.metadata["chunk"])]},
-            ]
-            for doc in doc_splits
+    # Add embeddings of document chunks to Matching Engine
+    texts = [doc.page_content for doc in doc_splits]
+    metadatas = [
+        [
+            {"namespace": "source", "allow_list": [doc.metadata["source"]]},
+            {"namespace": "document_name", "allow_list": [doc.metadata["document_name"]]},
+            {"namespace": "chunk", "allow_list": [str(doc.metadata["chunk"])]},
         ]
-        doc_ids = me.add_texts(texts=texts, metadatas=metadatas)
+        for doc in doc_splits
+    ]
+    doc_ids = me.add_texts(texts=texts, metadatas=metadatas)
 
-        print(me.similarity_search("¿Quiéres conocer cuánto vas a pagar de cuota mensual con Toperty?", k=2))
+    print(me.similarity_search("¿Quiéres conocer cuánto vas a pagar de cuota mensual con Toperty?", k=2))
